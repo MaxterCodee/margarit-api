@@ -10,6 +10,7 @@ type Rol struct {
 	ID             uint           `gorm:"primaryKey" json:"id"`
 	Nombre         string         `gorm:"not null" json:"nombre"`
 	Descripcion    string         `gorm:"type:text" json:"descripcion"`
+	Icono          string         `gorm:"type:varchar(255)" json:"icono"` // nuevo campo para el nombre del icono de Material Icons
 	ParaEstudiante bool           `gorm:"not null" json:"para_estudiante"`
 	ParaPersonal   bool           `gorm:"not null" json:"para_personal"`
 	CreatedAt      time.Time      `json:"created_at"`

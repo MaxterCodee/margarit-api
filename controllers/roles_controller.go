@@ -13,6 +13,7 @@ import (
 type CreateRoleInput struct {
 	Nombre         string `json:"nombre" binding:"required"`
 	Descripcion    string `json:"descripcion"`
+	Icono          string `json:"icono"`
 	ParaEstudiante bool   `json:"para_estudiante"`
 	ParaPersonal   bool   `json:"para_personal"`
 }
@@ -39,6 +40,7 @@ func CreateRole(c *gin.Context) {
 	rol := models.Rol{
 		Nombre:         input.Nombre,
 		Descripcion:    input.Descripcion,
+		Icono:          input.Icono,
 		ParaEstudiante: input.ParaEstudiante,
 		ParaPersonal:   input.ParaPersonal,
 	}
@@ -54,6 +56,7 @@ func CreateRole(c *gin.Context) {
 			"id":              rol.ID,
 			"nombre":          rol.Nombre,
 			"descripcion":     rol.Descripcion,
+			"icono":           rol.Icono,
 			"para_estudiante": rol.ParaEstudiante,
 			"para_personal":   rol.ParaPersonal,
 			"created_at":      rol.CreatedAt,
@@ -86,6 +89,7 @@ func GetRoles(c *gin.Context) {
 			"id":              rol.ID,
 			"nombre":          rol.Nombre,
 			"descripcion":     rol.Descripcion,
+			"icono":           rol.Icono,
 			"para_estudiante": rol.ParaEstudiante,
 			"para_personal":   rol.ParaPersonal,
 			"created_at":      rol.CreatedAt,
@@ -119,6 +123,7 @@ func GetRole(c *gin.Context) {
 type UpdateRoleInput struct {
 	Nombre         *string `json:"nombre"`
 	Descripcion    *string `json:"descripcion"`
+	Icono          *string `json:"icono"`
 	ParaEstudiante *bool   `json:"para_estudiante"`
 	ParaPersonal   *bool   `json:"para_personal"`
 }
@@ -159,6 +164,9 @@ func UpdateRole(c *gin.Context) {
 	}
 	if input.Descripcion != nil {
 		rol.Descripcion = *input.Descripcion
+	}
+	if input.Icono != nil {
+		rol.Icono = *input.Icono
 	}
 	if input.ParaEstudiante != nil {
 		rol.ParaEstudiante = *input.ParaEstudiante
