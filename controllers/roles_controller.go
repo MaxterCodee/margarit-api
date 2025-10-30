@@ -16,6 +16,7 @@ type CreateRoleInput struct {
 	Icono          string `json:"icono"`
 	ParaEstudiante bool   `json:"para_estudiante"`
 	ParaPersonal   bool   `json:"para_personal"`
+	ParaTutor      bool   `json:"para_tutor"`
 }
 
 func CreateRole(c *gin.Context) {
@@ -43,6 +44,7 @@ func CreateRole(c *gin.Context) {
 		Icono:          input.Icono,
 		ParaEstudiante: input.ParaEstudiante,
 		ParaPersonal:   input.ParaPersonal,
+		ParaTutor:      input.ParaTutor,
 	}
 
 	if err := database.DB.Create(&rol).Error; err != nil {
@@ -59,6 +61,7 @@ func CreateRole(c *gin.Context) {
 			"icono":           rol.Icono,
 			"para_estudiante": rol.ParaEstudiante,
 			"para_personal":   rol.ParaPersonal,
+			"para_tutor":      rol.ParaTutor,
 			"created_at":      rol.CreatedAt,
 			"updated_at":      rol.UpdatedAt,
 		},
@@ -92,6 +95,7 @@ func GetRoles(c *gin.Context) {
 			"icono":           rol.Icono,
 			"para_estudiante": rol.ParaEstudiante,
 			"para_personal":   rol.ParaPersonal,
+			"para_tutor":      rol.ParaTutor,
 			"created_at":      rol.CreatedAt,
 			"updated_at":      rol.UpdatedAt,
 			"tipo":            tipo,
@@ -109,7 +113,7 @@ func GetRole(c *gin.Context) {
 	var rol models.Rol
 	rolID := c.Param("id")
 
-	if err := database.DB.First(&rol, rolID).Error; err != nil {
+	if err := database.DB.Preload("Permisos").First(&rol, rolID).Error; err != nil {
 		c.JSON(http.StatusNotFound, gin.H{"error": "Rol no encontrado", "status": http.StatusNotFound})
 		return
 	}
@@ -126,6 +130,7 @@ type UpdateRoleInput struct {
 	Icono          *string `json:"icono"`
 	ParaEstudiante *bool   `json:"para_estudiante"`
 	ParaPersonal   *bool   `json:"para_personal"`
+	ParaTutor      *bool   `json:"para_tutor"`
 }
 
 // UpdateRole actualiza un rol existente
@@ -173,6 +178,9 @@ func UpdateRole(c *gin.Context) {
 	}
 	if input.ParaPersonal != nil {
 		rol.ParaPersonal = *input.ParaPersonal
+	}
+	if input.ParaTutor != nil {
+		rol.ParaTutor = *input.ParaTutor
 	}
 
 	if err := database.DB.Save(&rol).Error; err != nil {
