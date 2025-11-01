@@ -113,14 +113,21 @@ func GetRole(c *gin.Context) {
 	var rol models.Rol
 	rolID := c.Param("id")
 
-	if err := database.DB.Preload("Permisos").First(&rol, rolID).Error; err != nil {
+	if err := database.DB.Preload("Permisos.CategoriaPermiso").First(&rol, rolID).Error; err != nil {
 		c.JSON(http.StatusNotFound, gin.H{"error": "Rol no encontrado", "status": http.StatusNotFound})
 		return
+	}
+
+	permisosAgrupados := make(map[string][]models.Permiso)
+	for _, permiso := range rol.Permisos {
+		categoria := permiso.CategoriaPermiso.Titulo
+		permisosAgrupados[categoria] = append(permisosAgrupados[categoria], permiso)
 	}
 
 	c.JSON(http.StatusOK, gin.H{
 		"message": "Rol obtenido exitosamente",
 		"rol":     rol,
+		"permisos_agrupados": permisosAgrupados,
 	})
 }
 
