@@ -122,14 +122,33 @@ func GetPermisosDeRol(c *gin.Context) {
 		return
 	}
 
-	permisosAgrupados := make(map[string][]models.Permiso)
+	// Estructura para agrupar permisos por categoría
+	type PermisosPorCategoria struct {
+		Categoria models.CategoriaPermiso `json:"categoria"`
+		Permisos  []models.Permiso        `json:"permisos"`
+	}
+
+	permisosAgrupadosMap := make(map[uint]PermisosPorCategoria)
 	for _, rel := range relaciones {
-		categoriaNombre := rel.Permiso.CategoriaPermiso.Titulo
-		permisosAgrupados[categoriaNombre] = append(permisosAgrupados[categoriaNombre], rel.Permiso)
+		categoriaID := rel.Permiso.CategoriaPermiso.ID
+		if _, ok := permisosAgrupadosMap[categoriaID]; !ok {
+			permisosAgrupadosMap[categoriaID] = PermisosPorCategoria{
+				Categoria: rel.Permiso.CategoriaPermiso,
+				Permisos:  []models.Permiso{},
+			}
+		}
+		p := permisosAgrupadosMap[categoriaID]
+		p.Permisos = append(p.Permisos, rel.Permiso)
+		permisosAgrupadosMap[categoriaID] = p
+	}
+
+	var permisosAgrupados []PermisosPorCategoria
+	for _, v := range permisosAgrupadosMap {
+		permisosAgrupados = append(permisosAgrupados, v)
 	}
 
 	c.JSON(http.StatusOK, gin.H{
-		"message": "Permisos del rol obtenidos exitosamente",
+		"message":            "Permisos del rol obtenidos exitosamente",
 		"permisos_agrupados": permisosAgrupados,
 	})
 }
