@@ -156,7 +156,7 @@ func GetPermisosConEstadoAsignacion(c *gin.Context) {
 	roleID := c.Param("role_id")
 	
 	// Convertir roleID a uint para comparaciones
-	roleIDUint, err := strconv.ParseUint(roleID, 10, 32)
+	_, err := strconv.ParseUint(roleID, 10, 32)
 	if err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{"error": "ID de rol inválido"})
 		return

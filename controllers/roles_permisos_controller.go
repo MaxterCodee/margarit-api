@@ -225,7 +225,7 @@ func AsignarPermisosARol(c *gin.Context) {
 		}
 
 		// Crear la nueva relación
-		relacion := models.RoleTienePermiso{
+		relacion = models.RoleTienePermiso{
 			RoleID:    input.RoleID,
 			PermisoID: permisoID,
 		}
@@ -250,8 +250,8 @@ func AsignarPermisosARol(c *gin.Context) {
 }
 
 // Obtener todos los permisos con estado de asignación para un rol específico
-func GetPermisosConEstadoAsignacion(c *gin.Context) {
-	roleIDStr := c.Param("role_id")
+func GetRolePermisosConEstadoAsignacion(c *gin.Context) {
+	roleIDStr := c.Param("id")
 	roleID, err := strconv.ParseUint(roleIDStr, 10, 64)
 	if err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{"error": "ID de rol inválido"})
@@ -304,7 +304,7 @@ func GetPermisosConEstadoAsignacion(c *gin.Context) {
 	// Agrupar permisos por categoría y añadir estado de asignación
 	permisosAgrupadosMap := make(map[uint]PermisosPorCategoria)
 	for _, permiso := range permisos {
-		categoriaID := permiso.CategoriaID
+		categoriaID := permiso.CategoriaPermisoID
 		if _, ok := permisosAgrupadosMap[categoriaID]; !ok {
 			permisosAgrupadosMap[categoriaID] = PermisosPorCategoria{
 				Categoria: permiso.CategoriaPermiso,
@@ -314,9 +314,9 @@ func GetPermisosConEstadoAsignacion(c *gin.Context) {
 
 		permisoConEstado := PermisoConEstado{
 			ID:               permiso.ID,
-			Nombre:           permiso.Nombre,
+			Nombre:           permiso.Titulo,
 			Descripcion:      permiso.Descripcion,
-			CategoriaID:      permiso.CategoriaID,
+			CategoriaID:      permiso.CategoriaPermisoID,
 			CategoriaPermiso: permiso.CategoriaPermiso,
 			Asignado:         permisosAsignados[permiso.ID],
 		}
