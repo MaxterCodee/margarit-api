@@ -124,7 +124,7 @@ func GetPermisosDeRol(c *gin.Context) {
 
 	permisosAgrupados := make(map[string][]models.Permiso)
 	for _, rel := range relaciones {
-		categoriaNombre := rel.Permiso.CategoriaPermiso.Nombre
+		categoriaNombre := rel.Permiso.CategoriaPermiso.Titulo
 		permisosAgrupados[categoriaNombre] = append(permisosAgrupados[categoriaNombre], rel.Permiso)
 	}
 
