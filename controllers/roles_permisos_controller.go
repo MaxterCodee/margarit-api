@@ -56,6 +56,20 @@ func CreateRoleTienePermiso(c *gin.Context) {
 		return
 	}
 
+	// Verificar si el RoleID existe
+	var role models.Rol
+	if err := database.DB.First(&role, input.RoleID).Error; err != nil {
+		c.JSON(http.StatusNotFound, gin.H{"error": "Role no encontrado"})
+		return
+	}
+
+	// Verificar si el PermisoID existe
+	var permiso models.Permiso
+	if err := database.DB.First(&permiso, input.PermisoID).Error; err != nil {
+		c.JSON(http.StatusNotFound, gin.H{"error": "Permiso no encontrado"})
+		return
+	}
+
 	relacion := models.RoleTienePermiso{
 		RoleID:    input.RoleID,
 		PermisoID: input.PermisoID,
