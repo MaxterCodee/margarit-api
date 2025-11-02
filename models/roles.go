@@ -17,7 +17,7 @@ type Rol struct {
 	CreatedAt      time.Time      `json:"created_at"`
 	UpdatedAt      time.Time      `json:"updated_at"`
 	DeletedAt      gorm.DeletedAt `gorm:"index" json:"-"`
-	Permisos       []Permiso      `gorm:"many2many:role_tiene_permiso;foreignKey:ID;joinForeignKey:RoleID;references:ID;joinReferences:PermisoID" json:"permisos"`
+	Permisos       []Permiso      `gorm:"many2many:role_tiene_permiso;" json:"permisos"`
 }
 
 func (Rol) TableName() string {
