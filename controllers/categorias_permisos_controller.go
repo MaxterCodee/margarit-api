@@ -12,11 +12,13 @@ import (
 type CreateCategoriaPermisoInput struct {
 	Titulo      string `json:"titulo" binding:"required"`
 	Descripcion string `json:"descripcion"`
+	Icono       string `json:"icono"`
 }
 
 type UpdateCategoriaPermisoInput struct {
 	Titulo      *string `json:"titulo"`
 	Descripcion *string `json:"descripcion"`
+	Icono       *string `json:"icono"`
 }
 
 // Obtener todas las categorías de permisos
@@ -60,6 +62,7 @@ func CreateCategoriaPermiso(c *gin.Context) {
 	categoria := models.CategoriaPermiso{
 		Titulo:      input.Titulo,
 		Descripcion: input.Descripcion,
+		Icono:       input.Icono,
 	}
 
 	if err := database.DB.Create(&categoria).Error; err != nil {
@@ -94,6 +97,9 @@ func UpdateCategoriaPermiso(c *gin.Context) {
 	}
 	if input.Descripcion != nil {
 		categoria.Descripcion = *input.Descripcion
+	}
+	if input.Icono != nil {
+		categoria.Icono = *input.Icono
 	}
 
 	if err := database.DB.Save(&categoria).Error; err != nil {

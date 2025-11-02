@@ -10,6 +10,7 @@ type CategoriaPermiso struct {
 	ID          uint           `gorm:"primaryKey" json:"id"`
 	Titulo      string         `gorm:"not null" json:"titulo"`
 	Descripcion string         `gorm:"type:text" json:"descripcion"`
+	Icono       string         `json:"icono"`
 	CreatedAt   time.Time      `json:"created_at"`
 	UpdatedAt   time.Time      `json:"updated_at"`
 	DeletedAt   gorm.DeletedAt `gorm:"index" json:"-"`
