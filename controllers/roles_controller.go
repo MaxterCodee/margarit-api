@@ -222,3 +222,29 @@ func DeleteRole(c *gin.Context) {
 		"message": "Rol eliminado exitosamente",
 	})
 }
+
+// GetPermisosByRolId obtiene los permisos de un rol agrupados por su categoría
+func GetPermisosByRolId(c *gin.Context) {
+	var rol models.Rol
+	rolID := c.Param("id")
+
+	// Verificar si el rol existe y precargar sus permisos y categorías
+	if err := database.DB.Preload("Permisos.CategoriaPermiso").First(&rol, rolID).Error; err != nil {
+		c.JSON(http.StatusNotFound, gin.H{"error": "Rol no encontrado", "status": http.StatusNotFound})
+		return
+	}
+
+	// Agrupar permisos por categoría
+	permisosAgrupados := make(map[string][]models.Permiso)
+	for _, permiso := range rol.Permisos {
+		categoria := permiso.CategoriaPermiso.Titulo
+		permisosAgrupados[categoria] = append(permisosAgrupados[categoria], permiso)
+	}
+
+	c.JSON(http.StatusOK, gin.H{
+		"message":           "Permisos del rol obtenidos y agrupados exitosamente",
+		"rol_id":            rol.ID,
+		"rol_nombre":        rol.Nombre,
+		"permisos_agrupados": permisosAgrupados,
+	})
+}

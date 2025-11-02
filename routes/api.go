@@ -47,6 +47,7 @@ func SetupRouter() *gin.Engine {
 
 		// Rutas específicas de roles (deben ir antes que las rutas con parámetros)
 		protected.GET("/roles/:id/permisos", controllers.GetPermisosDeRol) // Obtener todos los permisos de un rol
+		protected.GET("/roles/:id/permisos_agrupados", controllers.GetPermisosByRolId) // Obtener permisos de un rol agrupados por categoría
 
 		// Rutas generales de roles (con parámetros)
 		protected.GET("/roles/:id", controllers.GetRole)       // Obtener un rol específico
