@@ -7,188 +7,8 @@ import (
 	"api-margaritai/config"
 	"api-margaritai/database"
 	"api-margaritai/models"
+	"api-margaritai/seeders"
 )
-
-// insertarGenerosIniciales inserta los registros iniciales de género
-func insertarGenerosIniciales() {
-	generos := []models.Genero{
-		{Nombre: "Masculino"},
-		{Nombre: "Femenino"},
-		{Nombre: "No especificado"},
-	}
-
-	for _, genero := range generos {
-		// Verificar si el género ya existe
-		var existingGenero models.Genero
-		result := database.DB.Where("nombre = ?", genero.Nombre).First(&existingGenero)
-
-		if result.Error != nil {
-			// Si no existe, crearlo
-			if err := database.DB.Create(&genero).Error; err != nil {
-				log.Printf("Error insertando género %s: %v", genero.Nombre, err)
-			} else {
-				log.Printf("Género '%s' insertado exitosamente", genero.Nombre)
-			}
-		} else {
-			log.Printf("Género '%s' ya existe, omitiendo", genero.Nombre)
-		}
-	}
-}
-
-// insertarEstatusEmpleadosIniciales inserta los registros iniciales de estatus de empleados
-func insertarEstatusEmpleadosIniciales() {
-	estatus := []models.EstatusEmpleado{
-		{Titulo: "Activo"},
-		{Titulo: "Inactivo"},
-		{Titulo: "Suspendido"},
-		{Titulo: "Terminado"},
-	}
-
-	for _, est := range estatus {
-		var existing models.EstatusEmpleado
-		result := database.DB.Where("titulo = ?", est.Titulo).First(&existing)
-
-		if result.Error != nil {
-			if err := database.DB.Create(&est).Error; err != nil {
-				log.Printf("Error insertando estatus empleado %s: %v", est.Titulo, err)
-			} else {
-				log.Printf("Estatus empleado '%s' insertado exitosamente", est.Titulo)
-			}
-		} else {
-			log.Printf("Estatus empleado '%s' ya existe, omitiendo", est.Titulo)
-		}
-	}
-}
-
-// insertarEstatusLaboralesIniciales inserta los registros iniciales de estatus laborales
-func insertarEstatusLaboralesIniciales() {
-	estatus := []models.EstatusLaboral{
-		{Titulo: "Contratado"},
-		{Titulo: "Por horas"},
-		{Titulo: "Temporal"},
-		{Titulo: "Pasantía"},
-	}
-
-	for _, est := range estatus {
-		var existing models.EstatusLaboral
-		result := database.DB.Where("titulo = ?", est.Titulo).First(&existing)
-
-		if result.Error != nil {
-			if err := database.DB.Create(&est).Error; err != nil {
-				log.Printf("Error insertando estatus laboral %s: %v", est.Titulo, err)
-			} else {
-				log.Printf("Estatus laboral '%s' insertado exitosamente", est.Titulo)
-			}
-		} else {
-			log.Printf("Estatus laboral '%s' ya existe, omitiendo", est.Titulo)
-		}
-	}
-}
-
-// insertarGradosAcademicosIniciales inserta los registros iniciales de grados académicos
-func insertarGradosAcademicosIniciales() {
-	grados := []models.GradoAcademico{
-		{Titulo: "Licenciatura"},
-		{Titulo: "Maestría"},
-		{Titulo: "Doctorado"},
-		{Titulo: "Técnico"},
-		{Titulo: "Bachillerato"},
-	}
-
-	for _, grado := range grados {
-		var existing models.GradoAcademico
-		result := database.DB.Where("titulo = ?", grado.Titulo).First(&existing)
-
-		if result.Error != nil {
-			if err := database.DB.Create(&grado).Error; err != nil {
-				log.Printf("Error insertando grado académico %s: %v", grado.Titulo, err)
-			} else {
-				log.Printf("Grado académico '%s' insertado exitosamente", grado.Titulo)
-			}
-		} else {
-			log.Printf("Grado académico '%s' ya existe, omitiendo", grado.Titulo)
-		}
-	}
-}
-
-// insertarTiposContratosIniciales inserta los registros iniciales de tipos de contratos
-func insertarTiposContratosIniciales() {
-	tipos := []models.TipoContrato{
-		{Titulo: "Tiempo completo"},
-		{Titulo: "Medio tiempo"},
-		{Titulo: "Por horas"},
-		{Titulo: "Temporal"},
-		{Titulo: "Pasantía"},
-	}
-
-	for _, tipo := range tipos {
-		var existing models.TipoContrato
-		result := database.DB.Where("titulo = ?", tipo.Titulo).First(&existing)
-
-		if result.Error != nil {
-			if err := database.DB.Create(&tipo).Error; err != nil {
-				log.Printf("Error insertando tipo contrato %s: %v", tipo.Titulo, err)
-			} else {
-				log.Printf("Tipo contrato '%s' insertado exitosamente", tipo.Titulo)
-			}
-		} else {
-			log.Printf("Tipo contrato '%s' ya existe, omitiendo", tipo.Titulo)
-		}
-	}
-}
-
-// insertarPuestosIniciales inserta los registros iniciales de puestos
-func insertarPuestosIniciales() {
-	puestos := []models.Puesto{
-		{Titulo: "Director", PagoXHr: 500.0},
-		{Titulo: "Subdirector", PagoXHr: 400.0},
-		{Titulo: "Coordinador", PagoXHr: 350.0},
-		{Titulo: "Profesor", PagoXHr: 300.0},
-		{Titulo: "Secretario", PagoXHr: 200.0},
-		{Titulo: "Conserje", PagoXHr: 150.0},
-	}
-
-	for _, puesto := range puestos {
-		var existing models.Puesto
-		result := database.DB.Where("titulo = ?", puesto.Titulo).First(&existing)
-
-		if result.Error != nil {
-			if err := database.DB.Create(&puesto).Error; err != nil {
-				log.Printf("Error insertando puesto %s: %v", puesto.Titulo, err)
-			} else {
-				log.Printf("Puesto '%s' insertado exitosamente", puesto.Titulo)
-			}
-		} else {
-			log.Printf("Puesto '%s' ya existe, omitiendo", puesto.Titulo)
-		}
-	}
-}
-
-// insertarRolesIniciales inserta los registros iniciales de roles
-func insertarRolesIniciales() {
-	roles := []models.Rol{
-		{Nombre: "Administrador", Descripcion: "Acceso completo al sistema", ParaEstudiante: false, ParaPersonal: true},
-		{Nombre: "Director", Descripcion: "Gestión de plantel", ParaEstudiante: false, ParaPersonal: true},
-		{Nombre: "Profesor", Descripcion: "Gestión de grupos y estudiantes", ParaEstudiante: false, ParaPersonal: true},
-		{Nombre: "Estudiante", Descripcion: "Acceso a información académica", ParaEstudiante: true, ParaPersonal: false},
-		{Nombre: "Tutor", Descripcion: "Acceso a información del estudiante", ParaEstudiante: false, ParaPersonal: false},
-	}
-
-	for _, rol := range roles {
-		var existing models.Rol
-		result := database.DB.Where("nombre = ?", rol.Nombre).First(&existing)
-
-		if result.Error != nil {
-			if err := database.DB.Create(&rol).Error; err != nil {
-				log.Printf("Error insertando rol %s: %v", rol.Nombre, err)
-			} else {
-				log.Printf("Rol '%s' insertado exitosamente", rol.Nombre)
-			}
-		} else {
-			log.Printf("Rol '%s' ya existe, omitiendo", rol.Nombre)
-		}
-	}
-}
 
 func main() {
 	// Definir flag para migrate fresh
@@ -277,13 +97,16 @@ func main() {
 
 		// Insertar datos iniciales
 		log.Println("Insertando datos iniciales...")
-		insertarGenerosIniciales()
-		insertarEstatusEmpleadosIniciales()
-		insertarEstatusLaboralesIniciales()
-		insertarGradosAcademicosIniciales()
-		insertarTiposContratosIniciales()
-		insertarPuestosIniciales()
-		insertarRolesIniciales()
+		seeders.InsertarGenerosIniciales()
+		seeders.InsertarEstatusEmpleadosIniciales()
+		seeders.InsertarEstatusLaboralesIniciales()
+		seeders.InsertarGradosAcademicosIniciales()
+		seeders.InsertarTiposContratosIniciales()
+		seeders.InsertarPuestosIniciales()
+		seeders.InsertarRolesIniciales()
+		seeders.InsertarCategoriasPermisosIniciales()
+		seeders.InsertarPermisosIniciales()
+		seeders.AsignarPermisosAdministrador()
 	} else {
 		log.Println("Tabla users existe, ejecutando migración manual...")
 
@@ -330,12 +153,15 @@ func main() {
 
 		// Verificar e insertar datos iniciales si no existen
 		log.Println("Verificando datos iniciales...")
-		insertarGenerosIniciales()
-		insertarEstatusEmpleadosIniciales()
-		insertarEstatusLaboralesIniciales()
-		insertarGradosAcademicosIniciales()
-		insertarTiposContratosIniciales()
-		insertarPuestosIniciales()
-		insertarRolesIniciales()
+		seeders.InsertarGenerosIniciales()
+		seeders.InsertarEstatusEmpleadosIniciales()
+		seeders.InsertarEstatusLaboralesIniciales()
+		seeders.InsertarGradosAcademicosIniciales()
+		seeders.InsertarTiposContratosIniciales()
+		seeders.InsertarPuestosIniciales()
+		seeders.InsertarRolesIniciales()
+		seeders.InsertarCategoriasPermisosIniciales()
+		seeders.InsertarPermisosIniciales()
+		seeders.AsignarPermisosAdministrador()
 	}
 }
