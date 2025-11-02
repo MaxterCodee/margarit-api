@@ -178,3 +178,161 @@ func GetRolesDePermiso(c *gin.Context) {
 		"roles":   roles,
 	})
 }
+
+// Estructura para recibir múltiples permisos a asignar a un rol
+type AsignarPermisosARolInput struct {
+	RoleID     uint   `json:"role_id" binding:"required"`
+	PermisosID []uint `json:"permisos_id" binding:"required"`
+}
+
+// Asignar múltiples permisos a un rol
+func AsignarPermisosARol(c *gin.Context) {
+	var input AsignarPermisosARolInput
+	if err := c.ShouldBindJSON(&input); err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+		return
+	}
+
+	// Verificar si el RoleID existe
+	var role models.Rol
+	if err := database.DB.First(&role, input.RoleID).Error; err != nil {
+		c.JSON(http.StatusNotFound, gin.H{"error": "Role no encontrado"})
+		return
+	}
+
+	// Verificar que todos los permisos existan
+	for _, permisoID := range input.PermisosID {
+		var permiso models.Permiso
+		if err := database.DB.First(&permiso, permisoID).Error; err != nil {
+			c.JSON(http.StatusNotFound, gin.H{"error": "Permiso con ID " + strconv.FormatUint(uint64(permisoID), 10) + " no encontrado"})
+			return
+		}
+	}
+
+	// Iniciar una transacción para asegurar que todas las asignaciones se realicen correctamente
+	tx := database.DB.Begin()
+
+	permisosAsignados := []models.RoleTienePermiso{}
+	permisosYaAsignados := []uint{}
+
+	// Verificar si alguno de los permisos ya está asignado al rol
+	for _, permisoID := range input.PermisosID {
+		var relacion models.RoleTienePermiso
+		if err := tx.Where("role_id = ? AND permiso_id = ?", input.RoleID, permisoID).First(&relacion).Error; err == nil {
+			// El permiso ya está asignado al rol
+			permisosYaAsignados = append(permisosYaAsignados, permisoID)
+			continue
+		}
+
+		// Crear la nueva relación
+		relacion := models.RoleTienePermiso{
+			RoleID:    input.RoleID,
+			PermisoID: permisoID,
+		}
+
+		if err := tx.Create(&relacion).Error; err != nil {
+			tx.Rollback()
+			c.JSON(http.StatusInternalServerError, gin.H{"error": "Error asignando permisos al rol"})
+			return
+		}
+
+		permisosAsignados = append(permisosAsignados, relacion)
+	}
+
+	// Confirmar la transacción
+	tx.Commit()
+
+	c.JSON(http.StatusOK, gin.H{
+		"message":              "Permisos asignados al rol exitosamente",
+		"permisos_asignados":   permisosAsignados,
+		"permisos_ya_asignados": permisosYaAsignados,
+	})
+}
+
+// Obtener todos los permisos con estado de asignación para un rol específico
+func GetPermisosConEstadoAsignacion(c *gin.Context) {
+	roleIDStr := c.Param("role_id")
+	roleID, err := strconv.ParseUint(roleIDStr, 10, 64)
+	if err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": "ID de rol inválido"})
+		return
+	}
+
+	// Verificar si el rol existe
+	var role models.Rol
+	if err := database.DB.First(&role, roleID).Error; err != nil {
+		c.JSON(http.StatusNotFound, gin.H{"error": "Rol no encontrado"})
+		return
+	}
+
+	// Obtener todos los permisos
+	var permisos []models.Permiso
+	if err := database.DB.Preload("CategoriaPermiso").Find(&permisos).Error; err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "Error obteniendo los permisos"})
+		return
+	}
+
+	// Obtener los permisos asignados al rol
+	var relaciones []models.RoleTienePermiso
+	if err := database.DB.Where("role_id = ?", roleID).Find(&relaciones).Error; err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "Error obteniendo las relaciones rol-permiso"})
+		return
+	}
+
+	// Crear un mapa para verificar rápidamente si un permiso está asignado
+	permisosAsignados := make(map[uint]bool)
+	for _, rel := range relaciones {
+		permisosAsignados[rel.PermisoID] = true
+	}
+
+	// Estructura para representar un permiso con su estado de asignación
+	type PermisoConEstado struct {
+		ID               uint                   `json:"id"`
+		Nombre           string                 `json:"nombre"`
+		Descripcion      string                 `json:"descripcion"`
+		CategoriaID      uint                   `json:"categoria_id"`
+		CategoriaPermiso models.CategoriaPermiso `json:"categoria_permiso"`
+		Asignado         bool                   `json:"asignado"`
+	}
+
+	// Estructura para agrupar permisos por categoría
+	type PermisosPorCategoria struct {
+		Categoria models.CategoriaPermiso `json:"categoria"`
+		Permisos  []PermisoConEstado      `json:"permisos"`
+	}
+
+	// Agrupar permisos por categoría y añadir estado de asignación
+	permisosAgrupadosMap := make(map[uint]PermisosPorCategoria)
+	for _, permiso := range permisos {
+		categoriaID := permiso.CategoriaID
+		if _, ok := permisosAgrupadosMap[categoriaID]; !ok {
+			permisosAgrupadosMap[categoriaID] = PermisosPorCategoria{
+				Categoria: permiso.CategoriaPermiso,
+				Permisos:  []PermisoConEstado{},
+			}
+		}
+
+		permisoConEstado := PermisoConEstado{
+			ID:               permiso.ID,
+			Nombre:           permiso.Nombre,
+			Descripcion:      permiso.Descripcion,
+			CategoriaID:      permiso.CategoriaID,
+			CategoriaPermiso: permiso.CategoriaPermiso,
+			Asignado:         permisosAsignados[permiso.ID],
+		}
+
+		p := permisosAgrupadosMap[categoriaID]
+		p.Permisos = append(p.Permisos, permisoConEstado)
+		permisosAgrupadosMap[categoriaID] = p
+	}
+
+	var permisosAgrupados []PermisosPorCategoria
+	for _, v := range permisosAgrupadosMap {
+		permisosAgrupados = append(permisosAgrupados, v)
+	}
+
+	c.JSON(http.StatusOK, gin.H{
+		"message":            "Permisos con estado de asignación obtenidos exitosamente",
+		"permisos_agrupados": permisosAgrupados,
+	})
+}

@@ -2,6 +2,7 @@ package controllers
 
 import (
 	"net/http"
+	"strconv"
 
 	"api-margaritai/database"
 	"api-margaritai/models"
@@ -130,5 +131,94 @@ func DeletePermiso(c *gin.Context) {
 
 	c.JSON(http.StatusOK, gin.H{
 		"message": "Permiso eliminado exitosamente",
+	})
+}
+
+// Estructura para representar un permiso con su estado de asignación
+type PermisoConAsignacion struct {
+	ID          uint   `json:"id"`
+	Titulo      string `json:"titulo"`
+	Descripcion string `json:"descripcion"`
+	Asignado    bool   `json:"asignado"`
+}
+
+// Estructura para representar una categoría con sus permisos
+type CategoriaConPermisos struct {
+	ID          uint                 `json:"id"`
+	Titulo      string               `json:"titulo"`
+	Descripcion string               `json:"descripcion"`
+	Icono       string               `json:"icono"`
+	Permisos    []PermisoConAsignacion `json:"permisos"`
+}
+
+// GetPermisosConEstadoAsignacion obtiene todos los permisos del sistema agrupados por categoría y verifica cuáles están asignados a un rol específico
+func GetPermisosConEstadoAsignacion(c *gin.Context) {
+	roleID := c.Param("role_id")
+	
+	// Convertir roleID a uint para comparaciones
+	roleIDUint, err := strconv.ParseUint(roleID, 10, 32)
+	if err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": "ID de rol inválido"})
+		return
+	}
+	
+	// Obtener todas las categorías de permisos
+	var categorias []models.CategoriaPermiso
+	if err := database.DB.Find(&categorias).Error; err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "Error obteniendo categorías de permisos"})
+		return
+	}
+	
+	// Obtener todos los permisos del sistema con sus categorías
+	var permisos []models.Permiso
+	if err := database.DB.Preload("CategoriaPermiso").Find(&permisos).Error; err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "Error obteniendo permisos"})
+		return
+	}
+	
+	// Obtener los permisos asignados al rol
+	var permisosDelRol []models.RoleTienePermiso
+	if err := database.DB.Where("role_id = ?", roleID).Find(&permisosDelRol).Error; err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "Error obteniendo permisos del rol"})
+		return
+	}
+	
+	// Crear un mapa para verificar rápidamente si un permiso está asignado al rol
+	permisosAsignados := make(map[uint]bool)
+	for _, rolPermiso := range permisosDelRol {
+		permisosAsignados[rolPermiso.PermisoID] = true
+	}
+	
+	// Crear un mapa para agrupar permisos por categoría
+	permisosPorCategoria := make(map[uint][]PermisoConAsignacion)
+	
+	// Agrupar permisos por categoría
+	for _, permiso := range permisos {
+		permisoConAsignacion := PermisoConAsignacion{
+			ID:          permiso.ID,
+			Titulo:      permiso.Titulo,
+			Descripcion: permiso.Descripcion,
+			Asignado:    permisosAsignados[permiso.ID],
+		}
+		
+		permisosPorCategoria[permiso.CategoriaPermisoID] = append(permisosPorCategoria[permiso.CategoriaPermisoID], permisoConAsignacion)
+	}
+	
+	// Crear la lista de categorías con sus permisos
+	var categoriasConPermisos []CategoriaConPermisos
+	
+	for _, categoria := range categorias {
+		categoriasConPermisos = append(categoriasConPermisos, CategoriaConPermisos{
+			ID:          categoria.ID,
+			Titulo:      categoria.Titulo,
+			Descripcion: categoria.Descripcion,
+			Icono:       categoria.Icono,
+			Permisos:    permisosPorCategoria[categoria.ID],
+		})
+	}
+	
+	c.JSON(http.StatusOK, gin.H{
+		"message":    "Permisos agrupados por categoría con estado de asignación obtenidos exitosamente",
+		"categorias": categoriasConPermisos,
 	})
 }

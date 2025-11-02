@@ -46,8 +46,9 @@ func SetupRouter() *gin.Engine {
 		protected.POST("/roles", controllers.CreateRole) // Crear un nuevo rol
 
 		// Rutas específicas de roles (deben ir antes que las rutas con parámetros)
-		protected.GET("/roles/:id/permisos", controllers.GetPermisosDeRol) // Obtener todos los permisos de un rol
-		protected.GET("/roles/:id/permisos_agrupados", controllers.GetPermisosByRolId) // Obtener permisos de un rol agrupados por categoría
+		protected.GET("/roles/:id/permisos", controllers.GetPermisosDeRol)                                   // Obtener todos los permisos de un rol
+		protected.GET("/roles/:id/permisos_agrupados", controllers.GetPermisosByRolId)                       // Obtener permisos de un rol agrupados por categoría
+		protected.GET("/roles/:role_id/permisos_con_asignacion", controllers.GetPermisosConEstadoAsignacion) // Obtener todos los permisos con estado de asignación
 
 		// Rutas generales de roles (con parámetros)
 		protected.GET("/roles/:id", controllers.GetRole)       // Obtener un rol específico
@@ -78,6 +79,7 @@ func SetupRouter() *gin.Engine {
 		protected.GET("/roles_tienen_permisos/:role_id/:permiso_id", controllers.GetRoleTienePermiso)       // Obtener una relación específica rol-permiso
 		protected.POST("/roles_tienen_permisos", controllers.CreateRoleTienePermiso)                        // Crear una nueva relación rol-permiso
 		protected.DELETE("/roles_tienen_permisos/:role_id/:permiso_id", controllers.DeleteRoleTienePermiso) // Eliminar una relación rol-permiso
+		protected.POST("/roles/asignar_permisos", controllers.AsignarPermisosARol)                          // Asignar múltiples permisos a un rol
 
 	}
 
