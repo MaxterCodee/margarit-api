@@ -2,6 +2,7 @@
 package controllers
 
 import (
+	"fmt"
 	"net/http"
 
 	"github.com/gin-gonic/gin"
@@ -233,6 +234,8 @@ func GetPermisosByRolId(c *gin.Context) {
 		c.JSON(http.StatusNotFound, gin.H{"error": "Rol no encontrado", "status": http.StatusNotFound})
 		return
 	}
+
+	fmt.Println("Permisos cargados para el rol:", rol.Permisos)
 
 	// Agrupar permisos por categoría
 	permisosAgrupados := make(map[string][]models.Permiso)
