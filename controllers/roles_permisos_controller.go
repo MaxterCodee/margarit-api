@@ -122,14 +122,15 @@ func GetPermisosDeRol(c *gin.Context) {
 		return
 	}
 
-	var permisos []models.Permiso
+	permisosAgrupados := make(map[string][]models.Permiso)
 	for _, rel := range relaciones {
-		permisos = append(permisos, rel.Permiso)
+		categoriaNombre := rel.Permiso.CategoriaPermiso.Nombre
+		permisosAgrupados[categoriaNombre] = append(permisosAgrupados[categoriaNombre], rel.Permiso)
 	}
 
 	c.JSON(http.StatusOK, gin.H{
-		"message":  "Permisos del rol obtenidos exitosamente",
-		"permisos": permisos,
+		"message": "Permisos del rol obtenidos exitosamente",
+		"permisos_agrupados": permisosAgrupados,
 	})
 }
 
