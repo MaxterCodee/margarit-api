@@ -249,6 +249,58 @@ func AsignarPermisosARol(c *gin.Context) {
 	})
 }
 
+// Estructura para recibir múltiples permisos a desasignar de un rol
+type DesasignarPermisosARolInput struct {
+	RoleID     uint   `json:"role_id" binding:"required"`
+	PermisosID []uint `json:"permisos_id" binding:"required"`
+}
+
+// Desasignar múltiples permisos de un rol
+func DesasignarPermisosARol(c *gin.Context) {
+	var input DesasignarPermisosARolInput
+	if err := c.ShouldBindJSON(&input); err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+		return
+	}
+
+	// Verificar si el RoleID existe
+	var role models.Rol
+	if err := database.DB.First(&role, input.RoleID).Error; err != nil {
+		c.JSON(http.StatusNotFound, gin.H{"error": "Role no encontrado"})
+		return
+	}
+
+	// Iniciar una transacción para asegurar que todas las desasignaciones se realicen correctamente
+	tx := database.DB.Begin()
+
+	permisosDesasignados := []uint{}
+	permisosNoAsignados := []uint{}
+
+	for _, permisoID := range input.PermisosID {
+		var relacion models.RoleTienePermiso
+		if err := tx.Where("role_id = ? AND permiso_id = ?", input.RoleID, permisoID).First(&relacion).Error; err != nil {
+			// El permiso no está asignado al rol
+			permisosNoAsignados = append(permisosNoAsignados, permisoID)
+			continue
+		}
+
+		if err := tx.Delete(&relacion).Error; err != nil {
+			tx.Rollback()
+			c.JSON(http.StatusInternalServerError, gin.H{"error": "Error desasignando permisos del rol"})
+			return
+		}
+		permisosDesasignados = append(permisosDesasignados, permisoID)
+	}
+
+	tx.Commit()
+
+	c.JSON(http.StatusOK, gin.H{
+		"message":               "Permisos desasignados del rol exitosamente",
+		"permisos_desasignados": permisosDesasignados,
+		"permisos_no_asignados": permisosNoAsignados,
+	})
+}
+
 // Obtener todos los permisos con estado de asignación para un rol específico
 func GetRolePermisosConEstadoAsignacion(c *gin.Context) {
 	roleIDStr := c.Param("id")

@@ -80,6 +80,7 @@ func SetupRouter() *gin.Engine {
 		protected.POST("/roles_tienen_permisos", controllers.CreateRoleTienePermiso)                        // Crear una nueva relación rol-permiso
 		protected.DELETE("/roles_tienen_permisos/:role_id/:permiso_id", controllers.DeleteRoleTienePermiso) // Eliminar una relación rol-permiso
 		protected.POST("/roles/asignar_permisos", controllers.AsignarPermisosARol)                          // Asignar múltiples permisos a un rol
+		protected.POST("/roles/desasignar_permisos", controllers.DesasignarPermisosARol) // Desasignar múltiples permisos de un rol
 
 	}
 
