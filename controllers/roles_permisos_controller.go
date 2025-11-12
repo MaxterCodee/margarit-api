@@ -213,7 +213,7 @@ func AsignarPermisosARol(c *gin.Context) {
 	tx := database.DB.Begin()
 
 	// Eliminar todos los permisos existentes para el rol
-	if err := tx.Where("role_id = ?", input.RoleID).Delete(&models.RoleTienePermiso{}).Error; err != nil {
+	if err := tx.Where("role_id = ?", input.RoleID).Unscoped().Delete(&models.RoleTienePermiso{}).Error; err != nil {
 		tx.Rollback()
 		c.JSON(http.StatusInternalServerError, gin.H{"error": "Error al eliminar permisos existentes del rol"})
 		return
@@ -239,7 +239,10 @@ func AsignarPermisosARol(c *gin.Context) {
 	}
 
 	// Confirmar la transacción
-	tx.Commit()
+	if err := tx.Commit().Error; err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "Error al confirmar la transacción"})
+		return
+	}
 
 	c.JSON(http.StatusOK, gin.H{
 		"message":               "Permisos asignados al rol exitosamente",
