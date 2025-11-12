@@ -212,20 +212,19 @@ func AsignarPermisosARol(c *gin.Context) {
 	// Iniciar una transacción para asegurar que todas las asignaciones se realicen correctamente
 	tx := database.DB.Begin()
 
+	// Eliminar todos los permisos existentes para el rol
+	if err := tx.Where("role_id = ?", input.RoleID).Delete(&models.RoleTienePermiso{}).Error; err != nil {
+		tx.Rollback()
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "Error al eliminar permisos existentes del rol"})
+		return
+	}
+
 	permisosAsignados := []models.RoleTienePermiso{}
-	permisosYaAsignados := []uint{}
 
-	// Verificar si alguno de los permisos ya está asignado al rol
+	// Asignar los nuevos permisos al rol
 	for _, permisoID := range input.PermisosID {
-		var relacion models.RoleTienePermiso
-		if err := tx.Where("role_id = ? AND permiso_id = ?", input.RoleID, permisoID).First(&relacion).Error; err == nil {
-			// El permiso ya está asignado al rol
-			permisosYaAsignados = append(permisosYaAsignados, permisoID)
-			continue
-		}
-
 		// Crear la nueva relación
-		relacion = models.RoleTienePermiso{
+		relacion := models.RoleTienePermiso{
 			RoleID:    input.RoleID,
 			PermisoID: permisoID,
 		}
@@ -245,7 +244,7 @@ func AsignarPermisosARol(c *gin.Context) {
 	c.JSON(http.StatusOK, gin.H{
 		"message":               "Permisos asignados al rol exitosamente",
 		"permisos_asignados":    permisosAsignados,
-		"permisos_ya_asignados": permisosYaAsignados,
+		"permisos_ya_asignados": []uint{}, // No hay permisos ya asignados si se eliminan todos antes.
 	})
 }
 
