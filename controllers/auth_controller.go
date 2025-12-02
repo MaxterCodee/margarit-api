@@ -91,6 +91,7 @@ func Register(c *gin.Context) {
 		FechaNac:  fechaNac,
 		GeneroID:  input.GeneroID,
 		RolID:     input.RolID,
+		EsActivo:  true, // Setear usuario como activo al registrar
 	}
 
 	if err := user.HashPassword(input.Password); err != nil {
@@ -141,6 +142,7 @@ func Register(c *gin.Context) {
 				"created_at":      user.Rol.CreatedAt.Format("2006-01-02 15:04:05"),
 				"updated_at":      user.Rol.UpdatedAt.Format("2006-01-02 15:04:05"),
 			},
+			"es_activo": user.EsActivo,
 		},
 	})
 }
@@ -254,6 +256,7 @@ func Login(c *gin.Context) {
 				"updated_at":      user.Rol.UpdatedAt.Format("2006-01-02 15:04:05"),
 				"permisos":        permisosResponse,
 			},
+			"es_activo": user.EsActivo,
 		},
 	})
 }

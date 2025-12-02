@@ -8,6 +8,8 @@ import (
 
 type Personal struct {
 	ID                uint            `gorm:"primaryKey" json:"id"`
+	UserID            uint            `gorm:"not null;unique;constraint:OnUpdate:CASCADE,OnDelete:CASCADE;" json:"user_id"`
+	User              User            `gorm:"foreignKey:UserID" json:"user"`
 	RFC               string          `gorm:"not null" json:"rfc"`
 	NumeroEmpleado    string          `gorm:"not null" json:"numero_empleado"`
 	Telefono1         string          `gorm:"not null" json:"telefono_1"`

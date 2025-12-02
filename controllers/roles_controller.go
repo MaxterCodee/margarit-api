@@ -85,6 +85,8 @@ func GetRoles(c *gin.Context) {
 			tipo = "Para estudiante"
 		} else if rol.ParaPersonal {
 			tipo = "Para personal"
+		} else if rol.ParaTutor {
+			tipo = "Para tutor"
 		} else {
 			tipo = ""
 		}
@@ -109,6 +111,45 @@ func GetRoles(c *gin.Context) {
 	})
 }
 
+// obtenerRolesEstudiante obtiene solo los roles donde ParaEstudiante es true
+func ObtenerRolesEstudiante(c *gin.Context) {
+	var roles []models.Rol
+	if err := database.DB.Where("para_estudiante = ?", true).Order("id desc").Find(&roles).Error; err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "Error obteniendo roles de estudiantes"})
+		return
+	}
+	c.JSON(http.StatusOK, gin.H{
+		"message": "Roles para estudiante obtenidos exitosamente",
+		"roles":   roles,
+	})
+}
+
+// obtenerRolesPersonal obtiene solo los roles donde ParaPersonal es true
+func ObtenerRolesPersonal(c *gin.Context) {
+	var roles []models.Rol
+	if err := database.DB.Where("para_personal = ?", true).Order("id desc").Find(&roles).Error; err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "Error obteniendo roles de personal"})
+		return
+	}
+	c.JSON(http.StatusOK, gin.H{
+		"message": "Roles para personal obtenidos exitosamente",
+		"roles":   roles,
+	})
+}
+
+// obtenerRolesTutor obtiene solo los roles donde ParaTutor es true
+func ObtenerRolesTutor(c *gin.Context) {
+	var roles []models.Rol
+	if err := database.DB.Where("para_tutor = ?", true).Order("id desc").Find(&roles).Error; err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "Error obteniendo roles de tutor"})
+		return
+	}
+	c.JSON(http.StatusOK, gin.H{
+		"message": "Roles para tutor obtenidos exitosamente",
+		"roles":   roles,
+	})
+}
+
 // GetRole obtiene un rol específico por ID
 func GetRole(c *gin.Context) {
 	var rol models.Rol
@@ -126,8 +167,8 @@ func GetRole(c *gin.Context) {
 	}
 
 	c.JSON(http.StatusOK, gin.H{
-		"message": "Rol obtenido exitosamente",
-		"rol":     rol,
+		"message":            "Rol obtenido exitosamente",
+		"rol":                rol,
 		"permisos_agrupados": permisosAgrupados,
 	})
 }
@@ -245,9 +286,9 @@ func GetPermisosByRolId(c *gin.Context) {
 	}
 
 	c.JSON(http.StatusOK, gin.H{
-		"message":           "Permisos del rol obtenidos y agrupados exitosamente",
-		"rol_id":            rol.ID,
-		"rol_nombre":        rol.Nombre,
+		"message":            "Permisos del rol obtenidos y agrupados exitosamente",
+		"rol_id":             rol.ID,
+		"rol_nombre":         rol.Nombre,
 		"permisos_agrupados": permisosAgrupados,
 	})
 }

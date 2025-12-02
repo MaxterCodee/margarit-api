@@ -38,13 +38,15 @@ func main() {
 			&models.Plantel{},
 			&models.Direccion{},
 			&models.User{},
-			&models.Session{}, // Añadido Session aquí
+			&models.Session{},
 			&models.Genero{},
 			&models.EstatusEmpleado{},
 			&models.EstatusLaboral{},
 			&models.Puesto{},
 			&models.GradoAcademico{},
 			&models.TipoContrato{},
+			&models.Grado{},
+			&models.Materia{},
 		)
 		if err != nil {
 			log.Fatal("Error eliminando tablas: ", err)
@@ -57,11 +59,13 @@ func main() {
 	var usersTableExists bool
 	var generosTableExists bool
 	var rolesTableExists bool
+	var gruposTableExists bool
 	database.DB.Raw("SELECT EXISTS (SELECT FROM information_schema.tables WHERE table_name = 'users')").Scan(&usersTableExists)
 	database.DB.Raw("SELECT EXISTS (SELECT FROM information_schema.tables WHERE table_name = 'generos')").Scan(&generosTableExists)
 	database.DB.Raw("SELECT EXISTS (SELECT FROM information_schema.tables WHERE table_name = 'roles')").Scan(&rolesTableExists)
+	database.DB.Raw("SELECT EXISTS (SELECT FROM information_schema.tables WHERE table_name = 'grupos')").Scan(&gruposTableExists)
 
-	if !usersTableExists || !generosTableExists || !rolesTableExists || *fresh {
+	if !usersTableExists || !generosTableExists || !rolesTableExists || !gruposTableExists || *fresh {
 		// Si las tablas no existen o estamos haciendo fresh, usar AutoMigrate
 		log.Println("Creando tablas con AutoMigrate...")
 		err := database.DB.AutoMigrate(
@@ -76,13 +80,15 @@ func main() {
 			&models.Permiso{},
 			&models.Rol{},
 			&models.Aula{},
+			&models.Grado{},
+			&models.Materia{},
 			// Tablas con dependencias
 			&models.User{},
 			&models.Session{},
 			&models.Direccion{},
 			&models.Plantel{},
 			&models.NivelEscolar{},
-			&models.Grupo{},
+			&models.Grupo{}, // <-- Asegurar que Grupo está incluido
 			&models.Personal{},
 			&models.Contrato{},
 			&models.Condicion{},

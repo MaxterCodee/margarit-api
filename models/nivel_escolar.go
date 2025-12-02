@@ -13,6 +13,8 @@ type NivelEscolar struct {
 	Mensualidad float64   `gorm:"not null" json:"mensualidad"`
 	PlantelID   uint      `gorm:"not null" json:"plantel_id"`
 	Plantel     Plantel   `gorm:"foreignKey:PlantelID" json:"plantel"`
+	Grados      []Grado   `gorm:"foreignKey:NivelEscolarID" json:"grados"`
+	Grupos      []Grupo   `gorm:"foreignKey:NivelEscolarID" json:"grupos"` // Relación con Grupo
 	CreatedAt   time.Time `json:"created_at"`
 	UpdatedAt   time.Time `json:"updated_at"`
 }
